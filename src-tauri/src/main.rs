@@ -4,28 +4,31 @@
     windows_subsystem = "windows"
   )]
   
-use std::process::Command;
+use std::process::{Command, Output};
 use std::env;
+use serde::Serialize;
 use tauri::{SystemTray,  CustomMenuItem, SystemTrayMenu, SystemTrayMenuItem, SystemTrayEvent, Manager};
 use tauri_plugin_positioner:: { Position, WindowExt};
 use window_vibrancy::apply_acrylic ;
 use window_shadows::set_shadow;
 // import Color
+#[tauri::command]
+fn get_current_branch(path: &str) -> Result<String, ()> {
+    let mut git = Command::new("git");
+    let result = git.arg("-C").arg(path).arg("branch")
+        .arg("--show-current").output().expect("failed to execute process");
+
+    Ok(String::from_utf8(result.stdout).unwrap())
+}
 
 
 #[tauri::command]
-fn greet(path: &str) -> String {
-    let command = if cfg!(target_os = "windows") {
-        "code.cmd"
-    } else {
-        "code"
-    };
+fn greet(path: &str) -> Result<String, ()>{
+    let mut git = Command::new("git");
+    let result = git.arg("-C").arg(path).arg("branch")
+    .arg("-a").output().expect("failed to execute process");
 
-    let mut vscode = Command::new(command);
-    vscode.arg(path);
-    let _ = vscode.spawn();
-
-    format!("Abrindo vscode em: {}! Deu bom ?",  path )
+    Ok(String::from_utf8(result.stdout).unwrap())
 }
 
 fn main() {
@@ -58,7 +61,7 @@ fn main() {
                 _ => {}
             }
         })
-        .invoke_handler(tauri::generate_handler![greet])
+        .invoke_handler(tauri::generate_handler![greet, get_current_branch])
         .system_tray(tray)
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
