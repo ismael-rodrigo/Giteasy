@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { Trash, FolderGit2, Github, Laptop2  } from 'lucide-react';
+import { Trash, FolderGit2, Github, Laptop2, FolderOpen  } from 'lucide-react';
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
@@ -28,7 +28,8 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import { Project } from '../Combobox/Combobox.projects';
 import { useState } from 'react';
-import { useProjectStore } from '@/components/stores/project.store';
+import { useProjectStore } from '@/stores/project.store';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 
 export function NewProjectModal(  ) {
@@ -61,13 +62,23 @@ export function NewProjectModal(  ) {
 return (<div className='w-full'>
 <Dialog open={openModal} onOpenChange={(isOpen)=>setOpen(isOpen) }>
 <DialogTrigger asChild >
-  <Button
-    onClick={()=>setOpen(true)}
-    variant='default' 
-    className='bg-violet-500 hover:bg-violet-600 w-full text-white flex justify-evenly' >
-    <FolderGit2 /> 
-        Add
-  </Button>
+    <TooltipProvider delayDuration={200}>
+        <Tooltip>
+            <TooltipTrigger asChild>
+            <Button
+                onClick={()=>setOpen(true)}
+                variant='default' 
+                className='bg-violet-500 hover:bg-violet-600 w-full text-white flex justify-evenly' >
+                <FolderGit2 /> 
+                    Add
+            </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+            <p>Adicionar novo projeto</p>
+        </TooltipContent>
+        </Tooltip>
+    </TooltipProvider>
+
 </DialogTrigger>
 <DialogContent className="w-11/12 rounded">
   <DialogHeader>
@@ -76,9 +87,9 @@ return (<div className='w-full'>
 
   <Tabs defaultValue="account">
     <TabsList className="grid w-full grid-cols-2 gap-2">
-      <TabsTrigger onClick={()=>changeProjectState('type', 'local')} value="account" className='bg-gray-200 gap-2 data-[state=active]:bg-violet-500 hover:bg-violet-200 data-[state=active]:text-white'>
+      <TabsTrigger onClick={()=>changeProjectState('type', 'local')} value="account" className=' gap-2 data-[state=active]:bg-violet-500 dark:data-[state=inactive]:bg-violet-100  data-[state=active]:text-white text-black '>
       <Laptop2 /> Projeto local</TabsTrigger>
-      <TabsTrigger onClick={()=>changeProjectState('type', 'remote')} value="password" className='bg-gray-200 gap-2 data-[state=active]:bg-violet-500 hover:bg-violet-200 data-[state=active]:text-white'>
+      <TabsTrigger onClick={()=>changeProjectState('type', 'remote')} value="password" className=' gap-2 data-[state=active]:bg-violet-500  dark:data-[state=inactive]:bg-violet-100 data-[state=active]:text-white text-black'>
         <Github />
         Projeto no GitHub</TabsTrigger>
     </TabsList>
@@ -94,7 +105,7 @@ return (<div className='w-full'>
           </div>
           <div className="space-y-1">
             {!project?.path 
-              ? <Button size="default" variant="outline" onClick={async ()=> {
+              ? <Button size="default" variant="outline" className='gap-2' onClick={async ()=> {
                 const result = await open({
                   multiple: false,
                   directory: true,
@@ -102,7 +113,9 @@ return (<div className='w-full'>
                 if(typeof result === 'string') {
                   changeProjectState('path',  result.toLowerCase() )
                 }
-              }} >Diretório do projeto</Button>
+              }} >
+                <FolderOpen />
+                Diretório do projeto</Button>
               : <>
                 <Label htmlFor="username">Diretório</Label>
                 <Card >

@@ -16,7 +16,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 
-import {  useProjectStore } from "@/components/stores/project.store"
+import {  useProjectStore } from "@/stores/project.store"
 import { Branch } from "./Combobox.branches"
 
 export type Project = {
@@ -56,7 +56,10 @@ export function ComboboxProjects() {
                 {projects.map((project) => (
                     <CommandItem
                         key={project.path}
-                        onSelect={() => setCurrentProject(project)}
+                        onSelect={() => {
+                            setCurrentProject(project)
+                            setOpen(false)
+                        }}
                         className="aria-selected:bg-violet-500 aria-selected:text-white cursor-pointer flex justify-between"
                     >
                     <div className="flex" >

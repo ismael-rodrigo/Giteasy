@@ -5,12 +5,12 @@
   )]
   
 use std::process::{Command, Output};
-use std::env;
-use serde::Serialize;
+use std::{env, result};
 use tauri::{SystemTray,  CustomMenuItem, SystemTrayMenu, SystemTrayMenuItem, SystemTrayEvent, Manager};
 use tauri_plugin_positioner:: { Position, WindowExt};
 use window_vibrancy::apply_acrylic ;
 use window_shadows::set_shadow;
+use std::io::Write;
 // import Color
 #[tauri::command]
 fn get_current_branch(path: &str) -> Result<String, ()> {
@@ -20,13 +20,34 @@ fn get_current_branch(path: &str) -> Result<String, ()> {
 
     Ok(String::from_utf8(result.stdout).unwrap())
 }
+#[tauri::command]
+fn checkout_branch(path: &str, branch: &str ) -> Result<String, String> {
+    let mut git = Command::new("git");
+    let result = git.arg("-C").arg(path)
+        .arg("checkout").arg(branch).output();
+
+    match result {
+        Ok(output) => {
+            if output.status.success() {
+                Ok(String::from_utf8(output.stdout).unwrap())
+            } else {
+                Err(String::from_utf8(output.stderr).unwrap())
+            }
+        }
+        Err(error) => {
+            Err(error.to_string())
+        }
+    }
+}
 
 
 #[tauri::command]
 fn greet(path: &str) -> Result<String, ()>{
     let mut git = Command::new("git");
-    let result = git.arg("-C").arg(path).arg("branch")
-    .arg("-a").output().expect("failed to execute process");
+    let result = git.arg("-C")
+        .arg(path).arg("branch")
+        .arg("--sort=-committerdate")
+        .output().expect("failed to execute process");
 
     Ok(String::from_utf8(result.stdout).unwrap())
 }
@@ -61,7 +82,7 @@ fn main() {
                 _ => {}
             }
         })
-        .invoke_handler(tauri::generate_handler![greet, get_current_branch])
+        .invoke_handler(tauri::generate_handler![greet, get_current_branch, checkout_branch])
         .system_tray(tray)
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

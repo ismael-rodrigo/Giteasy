@@ -1,7 +1,7 @@
 import { create } from 'zustand'
-import { Project } from '../std/Combobox/Combobox.projects'
+import { Project } from '../components/std/Combobox/Combobox.projects'
 import { invoke } from '@tauri-apps/api/tauri'
-import { Branch } from '../std/Combobox/Combobox.branches'
+import { Branch } from '../components/std/Combobox/Combobox.branches'
 
 interface ProjectStore {
     projects: Project[]
@@ -32,7 +32,6 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
             return { projects: [...state.projects, project] 
         }}
     )},
-
     removeProject: (project) => set((state) => ({ projects: state.projects.filter((p) => p.path !== project.path) })),
     alreadyExists: (project) => get().projects.some((p) => p.path === project.path)
 }))
