@@ -60,7 +60,7 @@ export function DialogCheckout() {
         setLoading(true)
         invoke('checkout_branch', {
             path: currentProject.path,
-            branch: branchTarget?.name.replace("*", ""),
+            branch: branchTarget?.name.replace("*", "").trim() ,
             pull: checkoutStates.pull
         })
             .then((result) => {
