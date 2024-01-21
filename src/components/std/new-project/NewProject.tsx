@@ -56,7 +56,14 @@ export function NewProjectModal(  ) {
         }
         addProject(project)
         setOpen(false)
-        setProject(prev =>({...prev, path: ''}))
+        setProject({
+          branches: [],
+          currentBranch: null,
+          initGit: false,
+          name: '',
+          path: '',
+          type: 'local'
+        })
     }
 
 return (<div className='w-full'>

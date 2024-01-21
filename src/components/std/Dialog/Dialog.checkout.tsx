@@ -11,7 +11,7 @@ import {
   } from "@/components/ui/alert-dialog"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { create } from "zustand"
 import { useProjectStore } from "@/stores/project.store"
 import { Branch } from "../Combobox/Combobox.branches"
@@ -40,19 +40,22 @@ export const useDialogCheckoutStore = create<DialogCheckoutState>(set => ({
 
 export function DialogCheckout() {
     const open = useDialogCheckoutStore(s => s.open)
-    const setOpen = useDialogCheckoutStore(s => s.setOpen)
     const promiseResolver = useDialogCheckoutStore(s => s.promiseResolver)
     const currentProject = useProjectStore(s => s.currentProject)
     const branchTarget = useDialogCheckoutStore(s => s.branchTarget)
     const [loading, setLoading] = useState(false)
     const [ openAlert, setOpenAlert ] = useState("")
 
-
     const [checkoutStates, setCheckoutStates] = useState({
         pull: true,
         path: currentProject?.path || '',
-        target: branchTarget?.name || ''
+        target: branchTarget?.name || '',
+        new_branch: false
     })
+
+    useEffect(() => {
+        checkoutStates.new_branch && setCheckoutStates(prev => ({ ...prev, pull: false }))
+    }, [checkoutStates.new_branch])
 
 
     async function handleExecCheckout() {
@@ -61,10 +64,17 @@ export function DialogCheckout() {
         invoke('checkout_branch', {
             path: currentProject.path,
             branch: branchTarget?.name.replace("*", "").trim() ,
-            pull: checkoutStates.pull
+            pull: checkoutStates.pull,
+            createBranch: checkoutStates.new_branch
         })
             .then((result) => {
-                console.log(result)
+                setCheckoutStates({
+                    new_branch: false,
+                    pull: true,
+                    path: currentProject?.path || '',
+                    target: branchTarget?.name || '',
+                })
+                setOpenAlert("")
                 promiseResolver?.(true)
             })
             .catch((error) => {
@@ -76,7 +86,6 @@ export function DialogCheckout() {
                     setLoading(false)
                 }, 1000)
             })
-
     }
 
 return (
@@ -91,16 +100,16 @@ return (
         </AlertDialogHeader>
 
         <div className="flex items-center space-x-2 my-2 mt-5">
-            <Switch id="airplane-mode"/>
-            <Label htmlFor="airplane-mode">Criar branch</Label>
+            <Switch id="airplane-mode" checked={checkoutStates.new_branch} onCheckedChange={(value)=> setCheckoutStates(prev => ({ ...prev, new_branch: value }))} />
+            <Label htmlFor="airplane-mode" >Criar branch</Label>
         </div>
         <div className="flex items-center space-x-2 my-2">
             <Switch checked={checkoutStates.pull} onCheckedChange={(value)=> setCheckoutStates(prev => ({ ...prev, pull: value }))} id="airplane-mode"/>
             <Label htmlFor="airplane-mode">Fazer pull em seguida</Label>
         </div>
-        {openAlert && <Alert variant="destructive" className="bg-transparent text-red-500">
+        {openAlert && !loading && <Alert variant="destructive" className="bg-transparent text-red-500">
             <Terminal className="h-4 w-4" />
-            <AlertTitle >Não foi possível realizar o checkout !</AlertTitle>
+            <AlertTitle >Deu ruim !</AlertTitle>
             <AlertDescription>
                 {openAlert}
             </AlertDescription>

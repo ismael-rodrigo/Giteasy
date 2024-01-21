@@ -8,7 +8,7 @@ interface ProjectStore {
     currentProject: Project | null
     setCurrentProject: (project: Project) => void
     addProject: (project: Project) => void
-    removeProject: (project: Project) => void
+    removeCurrentProject: (project: Project) => void
     alreadyExists: (project: Project) => boolean
     changeBrange: (project: Project, branch: Branch) => void
 }
@@ -24,7 +24,7 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
         const branches = (await invoke<string>('greet', { path: project.path })).split('\n').map(line => ({name: line.trim()})).filter((branch) => branch.name.length)
         project.branches = branches
         const currentBranch = branches.find((branch) => branch.name.startsWith('*'))
-        project.currentBranch = { name: currentBranch?.name || '??' }
+        project.currentBranch = { name: currentBranch?.name || '' }
         return set((state) => {
             if(!state.projects.length) {
                 return { projects: [project] , currentProject: project }
@@ -32,7 +32,12 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
             return { projects: [...state.projects, project] 
         }}
     )},
-    removeProject: (project) => set((state) => ({ projects: state.projects.filter((p) => p.path !== project.path) })),
-    alreadyExists: (project) => get().projects.some((p) => p.path === project.path)
+    removeCurrentProject: (project) => {
+        window.location.reload()
+        set((state) => ({
+            projects: state.projects.filter((p) => p.path !== project.path),
+            currentProject: state.currentProject?.path === project.path ? null : state.currentProject
+        }))},
+        alreadyExists: (project) => get().projects.some((p) => p.path === project.path)
 }))
 

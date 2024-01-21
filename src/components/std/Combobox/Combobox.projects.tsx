@@ -33,6 +33,7 @@ export function ComboboxProjects() {
     const projects = useProjectStore(s => s.projects)
     const currentProject = useProjectStore(s => s.currentProject)
     const setCurrentProject = useProjectStore(s => s.setCurrentProject)
+    const removeProject = useProjectStore(s => s.removeCurrentProject)
 
     return (
         <div className="w-80">
@@ -71,7 +72,7 @@ export function ComboboxProjects() {
                         />
                         {project.name}
                     </div>
-                    <Trash onClick={()=>{}} className="p-1 hover:text-red-500 rounded" size={23} />
+                    <Trash onClick={()=>{removeProject(project)}} className="p-1 hover:text-red-500 rounded" size={23} />
                     </CommandItem>
                 ))}
                 </CommandGroup>
