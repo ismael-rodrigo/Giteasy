@@ -22,15 +22,12 @@ function App() {
 
   useEffect(() => {
     localStorage.setItem('projects', JSON.stringify(projects))
-    console.log(`currentProject teste`, currentProject)
   }, [projects , currentProject])
 
 
   return (<div className='h-[600px] bg-background opacity-85'>
     <div className="flex justify-end   items-center gap-2 px-5 py-2">
-      <p className='dark:text-white p-0 m-0'>Tema</p>
       <ModeToggle/>
-
     </div>
     <div className='flex gap-3 pb-5 px-5 justify-between align-middle'>
       <div> 

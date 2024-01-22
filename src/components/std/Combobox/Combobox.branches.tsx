@@ -16,7 +16,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area"
 import {  useProjectStore } from "@/stores/project.store"
 import { DialogCheckout, useDialogCheckoutStore } from "../Dialog/Dialog.checkout"
-import { useEffect, useMemo, useState } from "react"
+import { useMemo, useState } from "react"
 
 export type Branch = {
     name: string

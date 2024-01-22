@@ -19,13 +19,13 @@ import { invoke } from "@tauri-apps/api/tauri"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Terminal, LoaderIcon } from "lucide-react"
 
-<LoaderIcon className="animate-spin" />
 interface DialogCheckoutState {
     open: boolean
     branchTarget: Branch | null
     setOpen: (open: boolean, branchTarget?: Branch) => Promise<boolean>
     promiseResolver: null | ((value: boolean) => void)
 }
+
 export const useDialogCheckoutStore = create<DialogCheckoutState>(set => ({
     open: false,
     promiseResolver: null,
@@ -67,7 +67,7 @@ export function DialogCheckout() {
             pull: checkoutStates.pull,
             createBranch: checkoutStates.new_branch
         })
-            .then((result) => {
+            .then(() => {
                 setCheckoutStates({
                     new_branch: false,
                     pull: true,
@@ -95,7 +95,7 @@ return (
         <AlertDialogHeader>
             <AlertDialogTitle className="text-lg" >Checkout</AlertDialogTitle>
             <AlertDialogDescription className="text-center ">
-                <p><b>{branchTarget?.name}</b></p> 
+                <b>{branchTarget?.name}</b>
             </AlertDialogDescription>
         </AlertDialogHeader>
 
