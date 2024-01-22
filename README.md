@@ -1,7 +1,12 @@
-# Tauri + React + Typescript
+# Giteasy
+## Easy interface to use commands git
 
-This template should help get you started developing with Tauri, React and Typescript in Vite.
+## Prerequisites
+- Microsoft Visual Studio C++ Build Tools
+- Rust `winget install --id Rustlang.Rustup`
 
-## Recommended IDE Setup
-
-- [VS Code](https://code.visualstudio.com/) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
+## Build
+- `git clone https://github.com/ismael-rodrigo/Giteasy`
+- `cd Giteasy`
+- `npm install`
+- `npm run tauri build` or run in dev mode `npm run tauri dev`
