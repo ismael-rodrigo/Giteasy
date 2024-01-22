@@ -104,7 +104,7 @@ return (
             <Label htmlFor="airplane-mode" >Criar branch</Label>
         </div>
         <div className="flex items-center space-x-2 my-2">
-            <Switch checked={checkoutStates.pull} onCheckedChange={(value)=> setCheckoutStates(prev => ({ ...prev, pull: value }))} id="airplane-mode"/>
+            <Switch disabled={checkoutStates.new_branch} checked={checkoutStates.pull} onCheckedChange={(value)=> setCheckoutStates(prev => ({ ...prev, pull: value }))} id="airplane-mode"/>
             <Label htmlFor="airplane-mode">Fazer pull em seguida</Label>
         </div>
         {openAlert && !loading && <Alert variant="destructive" className="bg-transparent text-red-500">
