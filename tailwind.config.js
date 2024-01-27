@@ -57,7 +57,18 @@ module.exports = {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      animation: {
+        "accordion-down": "accordion-down 0.2s ease-out",
+        "accordion-up": "accordion-up 0.2s ease-out",
+        "shake": "shake 0.8s cubic-bezier(.36,.87,.89,.37) both",
+      },
       keyframes: {
+        "shake": {
+          "10%, 90%": { transform: "translate3d(-1px, 0, 0)" },
+          "20%, 30%": { transform: "translate3d(2px, 0, 0)" },
+          "10%, 30%": { transform: "translate3d(-4px, 0, 0)" },
+          "40%, 60%": { transform: "translate3d(1px, 0, 0)" },
+        },
         "accordion-down": {
           from: { height: "0" },
           to: { height: "var(--radix-accordion-content-height)" },
@@ -66,10 +77,6 @@ module.exports = {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
-      },
-      animation: {
-        "accordion-down": "accordion-down 0.2s ease-out",
-        "accordion-up": "accordion-up 0.2s ease-out",
       },
     },
   },

@@ -17,32 +17,59 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import {  useProjectStore } from "@/stores/project.store"
 import { DialogCheckout, useDialogCheckoutStore } from "../Dialog/Dialog.checkout"
 import { useMemo, useState } from "react"
+import { invoke } from "@tauri-apps/api/tauri"
+import { useQuery } from "@tanstack/react-query"
+import { commitsStore } from "@/App"
 
 export type Branch = {
     name: string
 }
 
+export const useGetBranchQuery = (path: string | undefined) => {
+    return useQuery({
+        queryKey: ['branches', path],
+        queryFn: async () => {
+            const result = await invoke<string>('greet', { path })
+            let current = { name: '' }
+
+            const branchs = result
+                .split('\n')
+                .map(line => {
+                    if(line.startsWith("*")) {
+                        current = { name: line.trim().replace("*", "") } 
+                        return current
+                    }
+                    return { name: line.trim() } 
+                })
+                .filter((branch) => branch.name.length)
+            return { current, branchs }
+        }
+    })
+} 
 
 export function ComboboxBranchs() {
     const [open, setOpen] = useState(false)
     const projectStore = useProjectStore()
     const changeCurrentBranch = useProjectStore(s => s.changeBrange)
     const checkout = useDialogCheckoutStore(s => s.setOpen)
-
+    const error = commitsStore(s => s.error)
+    const setError = commitsStore(s => s.setError)
     const [input, setInput] = useState<string>('')
 
-    const filteredBranches= useMemo(() => {
-        const result = projectStore?.currentProject?.branches.filter(branch => branch.name.includes(input))
+    const { data } = useGetBranchQuery(projectStore.currentProject?.path)
+
+    const filteredBranches = useMemo(() => {
+        const result = data?.branchs.filter(branch => branch.name.includes(input))
         return !result?.length
                     ? [{name: input}]
                     : result
-    }, [projectStore.currentProject, input])
+    }, [data, input])
 
     return (
         <div className="w-full">
         <Popover open={open} onOpenChange={(state)=>{
-            setInput('')
-            setOpen(state)
+                setInput('')
+                setOpen(state)
             }}>
             <PopoverTrigger asChild>
             <Button
@@ -52,11 +79,11 @@ export function ComboboxBranchs() {
                 className="w-full justify-between bg-opacity-15"
                 disabled={!projectStore.currentProject || !projectStore.currentProject.branches.length}
             >
-                {projectStore.currentProject?.currentBranch?.name || "Selecione uma branch"}
+                {data?.current.name || "Selecione uma branch"}
                 <GitBranch className="ml-2 h-4 w-4 shrink-0 opacity-50" />
             </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-[330px] ">
+            <PopoverContent className="w-[440px] ">
             <Command
                 shouldFilter={false}
                 onChange={(value) => {

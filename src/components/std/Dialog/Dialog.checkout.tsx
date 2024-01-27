@@ -18,6 +18,7 @@ import { Branch } from "../Combobox/Combobox.branches"
 import { invoke } from "@tauri-apps/api/tauri"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Terminal, LoaderIcon } from "lucide-react"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 
 interface DialogCheckoutState {
     open: boolean
@@ -43,9 +44,10 @@ export function DialogCheckout() {
     const promiseResolver = useDialogCheckoutStore(s => s.promiseResolver)
     const currentProject = useProjectStore(s => s.currentProject)
     const branchTarget = useDialogCheckoutStore(s => s.branchTarget)
+    const updateBranchs = useProjectStore(s => s.updateBranchsOfCurrentProject)
     const [loading, setLoading] = useState(false)
     const [ openAlert, setOpenAlert ] = useState("")
-
+    const queryClient = useQueryClient()
     const [checkoutStates, setCheckoutStates] = useState({
         pull: true,
         path: currentProject?.path || '',
@@ -63,11 +65,19 @@ export function DialogCheckout() {
         setLoading(true)
         invoke('checkout_branch', {
             path: currentProject.path,
-            branch: branchTarget?.name.replace("*", "").trim() ,
+            branch: branchTarget?.name ,
             pull: checkoutStates.pull,
             createBranch: checkoutStates.new_branch
         })
             .then(() => {
+                queryClient.setQueryData<{current: Branch, branchs: Branch[]}>(['branches', currentProject.path], (state) => {
+                    if(branchTarget && state) {
+                        if(checkoutStates.new_branch) {
+                            return  { current: { name : branchTarget.name }, branchs: [{ name : branchTarget.name } ,...state.branchs]  }
+                        }
+                        return {  ...state, current: { name : branchTarget.name } }
+                    }
+                })
                 setCheckoutStates({
                     new_branch: false,
                     pull: true,
@@ -78,7 +88,6 @@ export function DialogCheckout() {
                 promiseResolver?.(true)
             })
             .catch((error) => {
-                console.log(error)
                 setOpenAlert(error)
             })
             .finally(() => {

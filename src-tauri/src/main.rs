@@ -4,7 +4,7 @@
     windows_subsystem = "windows"
   )]
   
-use std::process::Command;
+use std::{os::windows::process::CommandExt, process::Command};
 use std::env;
 use tauri::{SystemTray,  CustomMenuItem, SystemTrayMenu, SystemTrayMenuItem, SystemTrayEvent, Manager};
 use tauri_plugin_positioner:: {Position,WindowExt};
@@ -16,7 +16,7 @@ use tauri::GlobalShortcutManager;
 fn get_current_branch(path: &str) -> Result<String, ()> {
     let mut git = Command::new("git");
     let result = git.arg("-C").arg(path).arg("branch")
-        .arg("--show-current").output().expect("failed to execute process");
+        .arg("--show-current").creation_flags(0x08000000).output().expect("failed to execute process");
 
     Ok(String::from_utf8(result.stdout).unwrap())
 }
@@ -26,7 +26,7 @@ fn checkout_branch(path: &str, branch: &str, pull: bool, create_branch: bool ) -
     let mut git = Command::new("git");
     if create_branch {
         let result = git.arg("-C").arg(path)
-            .arg("checkout").arg("-b").arg(branch).output();
+            .arg("checkout").arg("-b").arg(branch).creation_flags(0x08000000).output();
         match result {
             Ok(output) => {
                 if output.status.success() {
@@ -42,7 +42,7 @@ fn checkout_branch(path: &str, branch: &str, pull: bool, create_branch: bool ) -
     }
 
     let result = git.arg("-C").arg(path)
-        .arg("checkout").arg(branch).output();
+        .arg("checkout").arg(branch).creation_flags(0x08000000).output();
 
     match result {
         Ok(output) => {
@@ -51,7 +51,7 @@ fn checkout_branch(path: &str, branch: &str, pull: bool, create_branch: bool ) -
                 if pull {
                     let mut git = Command::new("git");
                     let result = git.arg("-C").arg(path)
-                        .arg("pull").output();
+                        .arg("pull").creation_flags(0x08000000).output();
                     match result {
                         Ok(output) => {
                             if output.status.success() {
@@ -80,19 +80,20 @@ fn checkout_branch(path: &str, branch: &str, pull: bool, create_branch: bool ) -
 #[tauri::command]
 fn open_folder_vs_code(path: &str) -> Result<String, ()> {
     let mut code = Command::new("code.cmd");
-    let result = code.arg(path).output().expect("failed to execute process");
+    let result = code.arg(path).creation_flags(0x08000000).output().expect("failed to execute process");
     Ok(String::from_utf8(result.stdout).unwrap())
 }
 
 #[tauri::command]
 fn greet(path: &str) -> Result<String, ()>{
-    let mut git = Command::new("git");
-    let result = git.arg("-C")
-        .arg(path).arg("branch")
+    let mut git: std::process::Output = Command::new("git")
+        .arg("-C")
+        .arg(path)
+        .arg("branch")
         .arg("--sort=-committerdate")
-        .output().expect("failed to execute process");
+        .creation_flags(0x08000000).output().expect("failed to execute process");
 
-    Ok(String::from_utf8(result.stdout).unwrap())
+    Ok(String::from_utf8(git.stdout).unwrap())
 }
 
 fn main() {

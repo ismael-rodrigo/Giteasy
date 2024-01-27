@@ -11,12 +11,17 @@ interface ProjectStore {
     removeCurrentProject: (project: Project) => void
     alreadyExists: (project: Project) => boolean
     changeBrange: (project: Project, branch: Branch) => void
+    updateBranchsOfCurrentProject: () => void
 }
 
 export const useProjectStore = create<ProjectStore>((set, get) => ({
     projects: [] as Project[],
     currentProject: null,
     setCurrentProject: (project) => set({ currentProject: project }),
+    
+
+
+
     changeBrange: async (project, branch) => {
         return set(() => ({ currentProject: { ...project, currentBranch: branch } }))
     },
@@ -38,6 +43,15 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
             projects: state.projects.filter((p) => p.path !== project.path),
             currentProject: state.currentProject?.path === project.path ? null : state.currentProject
         }))},
-        alreadyExists: (project) => get().projects.some((p) => p.path === project.path)
+
+    updateBranchsOfCurrentProject: async () => {
+        const branches = (await invoke<string>('greet', { path: get().currentProject?.path })).split('\n').map(line => ({name: line.trim()})).filter((branch) => branch.name.length)
+        const currentBranch = branches.find((branch) => branch.name.startsWith('*')) || null
+        return set((state) => state.currentProject 
+            ? ({ currentProject: { ...state.currentProject, branches , currentBranch } })
+            : {} )
+    },
+
+    alreadyExists: (project) => get().projects.some((p) => p.path === project.path)
 }))
 
